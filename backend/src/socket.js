@@ -4,8 +4,18 @@ const jwt = require('jsonwebtoken');
 let io;
 
 function initSocket(httpServer) {
+  const rawOrigins = process.env.CORS_ORIGIN || process.env.CLIENT_URL || 'http://localhost:3000';
+  const allowedOrigins = rawOrigins
+    .split(',')
+    .map((o) => o.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
   io = new Server(httpServer, {
-    cors: { origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true },
+    cors: {
+      origin: allowedOrigins.includes('*') ? '*' : allowedOrigins,
+      credentials: true,
+      methods: ['GET', 'POST'],
+    },
   });
 
   // authenticate socket via JWT in handshake
